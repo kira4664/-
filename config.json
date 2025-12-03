@@ -1,0 +1,25 @@
+{
+  "default_duration": 60,
+  "default_language": "both",
+  "output_directory": "output",
+  "style": {
+    "japanese": {
+      "tone": "친근하고 자연스러운",
+      "use_casual_speech": true,
+      "include_reactions": true,
+      "description": "현지 일본인 유튜버가 사용하는 자연스러운 표현"
+    },
+    "english": {
+      "tone": "enthusiastic and authentic",
+      "use_casual_speech": true,
+      "include_reactions": true,
+      "description": "네이티브 스피커의 자연스러운 표현"
+    }
+  },
+  "script_template": {
+    "hook": "첫 3초 내 시청자의 관심을 끄는 강력한 후크",
+    "main_content": "팩트 기반의 흥미로운 정보 전달",
+    "call_to_action": "구독/좋아요 유도"
+  },
+  "custom_prompt_style": "여기에 '클로드 입숏대본쓰기'의 프롬프트 스타일을 입력하세요"
+}

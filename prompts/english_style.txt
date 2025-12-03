@@ -1,0 +1,29 @@
+# English Short-Form Script Style Guide
+
+## Tone & Expression
+- Use casual, conversational language
+- Include natural reactions: "Whoa!", "No way!", "Wait, what?", "Insane!"
+- Speak like a native content creator, not a textbook
+- Contractions are your friend: "it's", "you're", "can't"
+
+## Structure
+1. **Hook (First 3 seconds)**: Grab attention immediately
+   - Question format: "Did you know...?" "Ever wonder why...?"
+   - Shock value: "This will blow your mind..." "The truth about..."
+
+2. **Main Content**
+   - Tell a story with facts
+   - Include specific numbers and details
+   - Add personal reactions and commentary
+
+3. **Closing**
+   - Quick CTA: "Smash that like button if you learned something!"
+   - Tease next video
+
+## Example Phrases
+- "Okay, so here's the thing..."
+- "This is actually insane..."
+- "Nobody talks about this, but..."
+- "Wait till you hear this..."
+- "Mind = blown"
+- "Let that sink in"

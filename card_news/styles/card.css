@@ -13,14 +13,14 @@ body {
 
 .card {
   width: 1080px;
-  height: 1080px;
+  height: 1350px;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  padding: 80px;
+  padding: 100px 90px;
 }
 
 /* ── 테마별 배경 ── */
@@ -40,22 +40,22 @@ body {
   opacity: 0.08;
 }
 .deco-circle-1 {
-  width: 600px; height: 600px;
-  top: -200px; right: -200px;
+  width: 700px; height: 700px;
+  top: -220px; right: -220px;
   background: #ffffff;
 }
 .deco-circle-2 {
-  width: 400px; height: 400px;
-  bottom: -150px; left: -100px;
+  width: 500px; height: 500px;
+  bottom: -180px; left: -120px;
   background: #ffffff;
 }
 
 /* ── 카드 번호 ── */
 .card-number {
   position: absolute;
-  top: 48px;
-  right: 60px;
-  font-size: 28px;
+  top: 56px;
+  right: 72px;
+  font-size: 30px;
   font-weight: 700;
   letter-spacing: 2px;
   opacity: 0.5;
@@ -66,9 +66,9 @@ body {
 /* ── 브랜드 ── */
 .brand {
   position: absolute;
-  bottom: 44px;
-  left: 60px;
-  font-size: 24px;
+  bottom: 52px;
+  left: 72px;
+  font-size: 26px;
   font-weight: 700;
   opacity: 0.5;
   letter-spacing: 1px;
@@ -109,10 +109,10 @@ body {
 
 /* ── 메인 제목 ── */
 .main-title {
-  font-size: 72px;
+  font-size: 76px;
   font-weight: 900;
-  line-height: 1.2;
-  margin-bottom: 36px;
+  line-height: 1.25;
+  margin-bottom: 44px;
   word-break: keep-all;
   white-space: pre-wrap;
 }
@@ -145,43 +145,43 @@ body {
 /* ── 불릿 리스트 ── */
 .bullet-list {
   text-align: left;
-  max-width: 860px;
+  max-width: 880px;
   margin: 0 auto;
 }
 .bullet-item {
   display: flex;
   align-items: flex-start;
-  font-size: 36px;
-  line-height: 1.6;
-  margin-bottom: 24px;
+  font-size: 38px;
+  line-height: 1.65;
+  margin-bottom: 32px;
   word-break: keep-all;
 }
 .bullet-dot {
-  width: 14px; height: 14px;
+  width: 16px; height: 16px;
   border-radius: 50%;
-  margin-top: 14px;
-  margin-right: 20px;
+  margin-top: 16px;
+  margin-right: 22px;
   flex-shrink: 0;
 }
 
 /* ── 훅 카드 전용 ── */
 .hook-emoji {
-  font-size: 100px;
-  margin-bottom: 40px;
+  font-size: 120px;
+  margin-bottom: 48px;
 }
 .hook-title {
-  font-size: 80px;
+  font-size: 88px;
   font-weight: 900;
   color: #ffffff;
   line-height: 1.2;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
   word-break: keep-all;
   white-space: pre-wrap;
 }
 .hook-sub {
-  font-size: 36px;
+  font-size: 38px;
   color: rgba(255,255,255,0.7);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .hook-accent {
   color: #ffd700;
@@ -190,26 +190,27 @@ body {
 
 /* ── CTA 카드 전용 ── */
 .cta-emoji {
-  font-size: 90px;
-  margin-bottom: 36px;
+  font-size: 110px;
+  margin-bottom: 44px;
 }
 .cta-title {
-  font-size: 64px;
+  font-size: 68px;
   font-weight: 900;
   color: #ffffff;
-  margin-bottom: 40px;
+  margin-bottom: 48px;
   word-break: keep-all;
+  line-height: 1.25;
 }
 .cta-buttons {
   display: flex;
-  gap: 24px;
+  gap: 28px;
   justify-content: center;
   flex-wrap: wrap;
 }
 .cta-btn {
-  padding: 20px 48px;
+  padding: 24px 56px;
   border-radius: 50px;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 700;
 }
 .cta-btn-primary {
@@ -223,10 +224,10 @@ body {
 
 /* ── 구분선 ── */
 .divider {
-  width: 80px;
-  height: 5px;
+  width: 90px;
+  height: 6px;
   border-radius: 3px;
-  margin: 32px auto;
+  margin: 40px auto;
 }
 .dark-theme .divider { background: rgba(255,255,255,0.3); }
 .light-theme .divider { background: rgba(0,0,0,0.15); }

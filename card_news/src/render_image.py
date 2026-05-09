@@ -99,14 +99,36 @@ def build_html(card: dict, number: int, total: int, brand: str) -> str:
         return _render_content(card, number, total, brand)
 
 
+_HEADLESS_CANDIDATES = [
+    "/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell",
+    "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
+    "/usr/bin/google-chrome",
+]
+
+
+def _find_chromium() -> str | None:
+    import os
+    for path in _HEADLESS_CANDIDATES:
+        if os.path.isfile(path):
+            return path
+    return None
+
+
 async def _capture_with_playwright(html_content: str, output_path: Path, tmp_html: Path):
     from playwright.async_api import async_playwright
 
     tmp_html.write_text(html_content, encoding="utf-8")
 
+    chromium_path = _find_chromium()
+    launch_kwargs = {"args": ["--no-sandbox", "--disable-setuid-sandbox"]}
+    if chromium_path:
+        launch_kwargs["executable_path"] = chromium_path
+
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        page = await browser.new_page(viewport={"width": 1080, "height": 1080})
+        browser = await p.chromium.launch(**launch_kwargs)
+        page = await browser.new_page(viewport={"width": 1080, "height": 1350})
         await page.goto(f"file://{tmp_html.resolve()}")
         await page.wait_for_timeout(800)
         await page.screenshot(path=str(output_path), full_page=False)

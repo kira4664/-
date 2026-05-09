@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  background: #f0f0f0;
+}
+
+.card {
+  width: 1080px;
+  height: 1080px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 80px;
+}
+
+/* ── 테마별 배경 ── */
+.theme-hook     { background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+.theme-problem  { background: linear-gradient(145deg, #fff9f0 0%, #fff3e0 100%); }
+.theme-info     { background: linear-gradient(145deg, #f0f7ff 0%, #e3f0ff 100%); }
+.theme-condition{ background: linear-gradient(145deg, #f0fff4 0%, #e3ffed 100%); }
+.theme-method   { background: linear-gradient(145deg, #fdf0ff 0%, #f5e3ff 100%); }
+.theme-caution  { background: linear-gradient(145deg, #fff0f0 0%, #ffe3e3 100%); }
+.theme-summary  { background: linear-gradient(145deg, #fffdf0 0%, #fff8e1 100%); }
+.theme-cta      { background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+
+/* ── 장식 원형 배경 ── */
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.08;
+}
+.deco-circle-1 {
+  width: 600px; height: 600px;
+  top: -200px; right: -200px;
+  background: #ffffff;
+}
+.deco-circle-2 {
+  width: 400px; height: 400px;
+  bottom: -150px; left: -100px;
+  background: #ffffff;
+}
+
+/* ── 카드 번호 ── */
+.card-number {
+  position: absolute;
+  top: 48px;
+  right: 60px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 0.5;
+}
+.dark-theme .card-number { color: #ffffff; }
+.light-theme .card-number { color: #333333; }
+
+/* ── 브랜드 ── */
+.brand {
+  position: absolute;
+  bottom: 44px;
+  left: 60px;
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0.5;
+  letter-spacing: 1px;
+}
+.dark-theme .brand { color: #ffffff; }
+.light-theme .brand { color: #666666; }
+
+/* ── 콘텐츠 영역 ── */
+.content {
+  width: 100%;
+  text-align: center;
+  z-index: 1;
+}
+
+/* ── 태그 ── */
+.tag {
+  display: inline-block;
+  padding: 10px 28px;
+  border-radius: 50px;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+.dark-theme .tag {
+  background: rgba(255,255,255,0.15);
+  color: #ffffff;
+}
+.light-theme .tag {
+  color: #ffffff;
+}
+.tag-problem   { background: #ff7043; }
+.tag-info      { background: #2196f3; }
+.tag-condition { background: #4caf50; }
+.tag-method    { background: #9c27b0; }
+.tag-caution   { background: #f44336; }
+.tag-summary   { background: #ff9800; }
+
+/* ── 메인 제목 ── */
+.main-title {
+  font-size: 72px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 36px;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}
+.dark-theme .main-title { color: #ffffff; }
+.light-theme .main-title { color: #1a1a1a; }
+
+/* ── 서브 텍스트 ── */
+.sub-text {
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.7;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}
+.dark-theme .sub-text { color: rgba(255,255,255,0.75); }
+.light-theme .sub-text { color: #555555; }
+
+/* ── 강조 박스 ── */
+.highlight-box {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.dark-theme .highlight-box {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+}
+
+/* ── 불릿 리스트 ── */
+.bullet-list {
+  text-align: left;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.bullet-item {
+  display: flex;
+  align-items: flex-start;
+  font-size: 36px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  word-break: keep-all;
+}
+.bullet-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  margin-top: 14px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+/* ── 훅 카드 전용 ── */
+.hook-emoji {
+  font-size: 100px;
+  margin-bottom: 40px;
+}
+.hook-title {
+  font-size: 80px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 32px;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}
+.hook-sub {
+  font-size: 36px;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.6;
+}
+.hook-accent {
+  color: #ffd700;
+  font-weight: 900;
+}
+
+/* ── CTA 카드 전용 ── */
+.cta-emoji {
+  font-size: 90px;
+  margin-bottom: 36px;
+}
+.cta-title {
+  font-size: 64px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 40px;
+  word-break: keep-all;
+}
+.cta-buttons {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.cta-btn {
+  padding: 20px 48px;
+  border-radius: 50px;
+  font-size: 32px;
+  font-weight: 700;
+}
+.cta-btn-primary {
+  background: #ffd700;
+  color: #1a1a2e;
+}
+.cta-btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: #ffffff;
+}
+
+/* ── 구분선 ── */
+.divider {
+  width: 80px;
+  height: 5px;
+  border-radius: 3px;
+  margin: 32px auto;
+}
+.dark-theme .divider { background: rgba(255,255,255,0.3); }
+.light-theme .divider { background: rgba(0,0,0,0.15); }

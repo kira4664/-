@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Nanum Gothic', sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Canvas card styling */
+.card-canvas-wrapper canvas {
+  display: block;
+}
+
+/* Custom range slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: #444;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #6366f1;
+  cursor: pointer;
+}

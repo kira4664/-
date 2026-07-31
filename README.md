@@ -95,3 +95,104 @@ cp .env.example .env
 ## 출력 예시
 
 생성된 대본은 `output/` 폴더에 JSON 형식으로 저장됩니다.
+
+---
+
+# 블로그 자동 포스팅 도구 (Blog Auto Poster)
+
+키워드를 입력하면 웹에서 자료를 검색·취합하고, 그 자료를 바탕으로 블로그 글을 작성한 뒤 워드프레스에 자동으로 포스팅하는 도구입니다.
+
+## 동작 방식
+
+1. **웹 리서치**: Claude의 웹 검색 도구로 키워드 관련 최신 자료를 여러 출처에서 수집·취합
+2. **글 작성**: 취합된 자료를 근거로 제목/본문(HTML)/발췌문/태그/메타 설명을 생성
+3. **자동 포스팅**: 워드프레스 REST API로 지정한 상태(초안/발행 등)로 게시
+
+## 초기 설정
+
+### 1. 워드프레스 Application Password 발급
+
+워드프레스 관리자 페이지 → 사용자 → 프로필 → **Application Passwords**에서 새 비밀번호를 발급받으세요. 일반 로그인 비밀번호가 아니라 이 전용 비밀번호를 사용해야 합니다.
+
+### 2. `.env` 파일에 정보 입력
+
+```bash
+cp .env.example .env
+```
+
+```
+ANTHROPIC_API_KEY=your_api_key_here
+WP_URL=https://your-wordpress-site.com
+WP_USERNAME=your_wp_username
+WP_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
+```
+
+### 3. `config.json`의 `blog` 섹션 설정 (선택)
+
+```json
+{
+  "blog": {
+    "language": "ko",
+    "default_status": "draft",
+    "default_category": "",
+    "num_search_queries": 5,
+    "min_word_count": 800,
+    "tone": "친근하고 신뢰감 있는",
+    "custom_style": ""
+  }
+}
+```
+
+- `default_status`: `draft`(초안) / `publish`(즉시 발행) / `pending`(검토 대기) — 기본값은 안전하게 `draft`
+- `num_search_queries`: 웹 검색 최대 횟수
+- `custom_style`: 원하는 문체/톤을 자유롭게 지정
+
+## 사용 방법
+
+```bash
+# 초안으로만 생성 (실제 게시 없이 결과만 확인)
+python blog_poster.py --keyword "2026년 AI 트렌드" --dry-run
+
+# 워드프레스에 초안으로 저장
+python blog_poster.py --keyword "홈트레이닝 루틴 추천"
+
+# 카테고리 지정 + 즉시 발행
+python blog_poster.py --keyword "제주도 여행 코스" --status publish --category "여행"
+
+# 영어로 작성
+python blog_poster.py --keyword "best coffee brewing methods" --lang en
+```
+
+기본값은 `--status draft`로, 실수로 바로 공개 발행되지 않도록 안전하게 초안 상태로 저장됩니다. 확인 후 워드프레스 관리자 페이지에서 직접 발행하거나, `--status publish`를 명시적으로 지정하세요.
+
+리서치 자료와 생성된 글, 워드프레스 게시 결과는 `output/blog_<키워드>_<타임스탬프>.json`에 저장됩니다.
+
+## 주제 자동 선정
+
+`--keyword`를 생략하고 실행하면, 웹 검색으로 최근 화제/트렌드를 확인해 블로그 글감이 될 만한 구체적인 주제를 자동으로 하나 고릅니다.
+
+```bash
+python blog_poster.py --status draft
+```
+
+- 이미 다룬 주제는 `data/used_topics.json`에 기록되어, 다음 자동 선정 시 중복을 피하는 데 사용됩니다.
+- `config.json`의 `blog.topic_category`에 값을 넣으면 특정 분야(예: `"IT/테크"`, `"여행"`) 안에서만 주제를 고릅니다. 비워두면 분야 제한 없이 폭넓게 고릅니다.
+
+## 자동 반복 실행 (GitHub Actions)
+
+`.github/workflows/blog-auto-post.yml`에 **3시간마다(하루 8회)** 자동으로 실행되는 워크플로가 포함되어 있습니다. 매 실행마다 키워드 없이 `blog_poster.py --status draft`를 호출해 주제를 자동으로 고르고, 초안으로 워드프레스에 저장합니다.
+
+### 설정 방법
+
+1. GitHub 저장소 **Settings → Secrets and variables → Actions**에서 다음 시크릿을 등록하세요:
+   - `ANTHROPIC_API_KEY`
+   - `WP_URL`
+   - `WP_USERNAME`
+   - `WP_APP_PASSWORD`
+2. 이 워크플로 파일이 **저장소의 기본 브랜치**에 병합되어야 스케줄이 실제로 동작합니다 (GitHub는 기본 브랜치에 있는 워크플로만 `schedule` 트리거로 실행합니다). PR이 머지되기 전까지는 **Actions 탭에서 수동 실행(`workflow_dispatch`)** 으로 미리 테스트할 수 있습니다.
+3. 주제 중복을 피하기 위해 매 실행 후 `data/used_topics.json`을 저장소에 자동으로 커밋합니다.
+
+### 안전장치
+
+- 게시 상태는 항상 `draft`(초안)입니다. 자동 생성된 글이 검수 없이 바로 공개되지 않도록 하기 위함이며, 품질을 확인한 뒤 워드프레스 관리자 페이지에서 직접 발행하는 것을 권장합니다.
+- 실행 주기나 게시 상태를 바꾸려면 워크플로 파일의 `cron` 값과 `--status` 옵션을 수정하세요.

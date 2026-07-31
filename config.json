@@ -21,5 +21,17 @@
     "main_content": "팩트 기반의 흥미로운 정보 전달",
     "call_to_action": "구독/좋아요 유도"
   },
-  "custom_prompt_style": "여기에 '클로드 입숏대본쓰기'의 프롬프트 스타일을 입력하세요"
+  "custom_prompt_style": "여기에 '클로드 입숏대본쓰기'의 프롬프트 스타일을 입력하세요",
+  "blog": {
+    "language": "ko",
+    "default_status": "draft",
+    "default_category": "",
+    "num_search_queries": 5,
+    "min_word_count": 800,
+    "tone": "친근하고 신뢰감 있는",
+    "custom_style": "",
+    "topic_category": "",
+    "topic_history_file": "data/used_topics.json",
+    "topic_history_limit": 30
+  }
 }

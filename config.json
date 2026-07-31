@@ -29,6 +29,9 @@
     "num_search_queries": 5,
     "min_word_count": 800,
     "tone": "친근하고 신뢰감 있는",
-    "custom_style": ""
+    "custom_style": "",
+    "topic_category": "",
+    "topic_history_file": "data/used_topics.json",
+    "topic_history_limit": 30
   }
 }

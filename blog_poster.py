@@ -57,10 +57,107 @@ class BlogPoster:
         self.output_dir.mkdir(exist_ok=True)
 
         self.blog_config = self.config.get("blog", {})
+        self.topic_history_path = Path(
+            self.blog_config.get("topic_history_file", "data/used_topics.json")
+        )
+        self.topic_history_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _load_config(self, config_path: str) -> Dict:
         with open(config_path, "r", encoding="utf-8") as f:
             return json.load(f)
+
+    # ------------------------------------------------------------------
+    # 서버 사이드 web_search 도구를 사용해 텍스트 응답을 얻는 공통 헬퍼
+    # ------------------------------------------------------------------
+    def _search_and_generate_text(
+        self, system: str, user_prompt: str, max_uses: int, max_tokens: int = 8000
+    ) -> str:
+        tools = [{"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses}]
+        messages = [{"role": "user", "content": user_prompt}]
+        response = self.client.messages.create(
+            model=MODEL,
+            max_tokens=max_tokens,
+            system=system,
+            tools=tools,
+            messages=messages,
+        )
+
+        # 서버 사이드 도구 호출이 10회 제한에 걸리면 pause_turn으로 멈추므로 이어서 진행
+        continuations = 0
+        while response.stop_reason == "pause_turn" and continuations < 5:
+            messages = [
+                {"role": "user", "content": user_prompt},
+                {"role": "assistant", "content": response.content},
+            ]
+            response = self.client.messages.create(
+                model=MODEL,
+                max_tokens=max_tokens,
+                system=system,
+                tools=tools,
+                messages=messages,
+            )
+            continuations += 1
+
+        return "\n".join(block.text for block in response.content if block.type == "text")
+
+    # ------------------------------------------------------------------
+    # 0) 주제 자동 선정 (키워드를 지정하지 않았을 때)
+    # ------------------------------------------------------------------
+    def _load_recent_topics(self, limit: int = 30) -> List[str]:
+        if not self.topic_history_path.exists():
+            return []
+        with open(self.topic_history_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return [item["topic"] for item in data[-limit:]]
+
+    def _record_topic(self, topic: str) -> None:
+        data = []
+        if self.topic_history_path.exists():
+            with open(self.topic_history_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        data.append({"topic": topic, "used_at": datetime.now().isoformat()})
+        with open(self.topic_history_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    def pick_trending_topic(self) -> str:
+        """키워드가 주어지지 않았을 때, 웹 검색으로 최근 화제가 되는 구체적인 블로그 주제를 하나 고릅니다."""
+        category = self.blog_config.get("topic_category", "")
+        recent = self._load_recent_topics(self.blog_config.get("topic_history_limit", 30))
+
+        scope = f"'{category}' 분야 안에서" if category else "특정 분야에 국한되지 않고 폭넓게"
+        system = (
+            "당신은 블로그 편집장입니다. 웹 검색으로 최근 화제/트렌드를 확인하고, "
+            "블로그 글 하나로 다루기 좋은 구체적인 주제를 정확히 하나 고릅니다."
+        )
+        user_prompt = f"""
+{scope} 지금 블로그 글로 다루기 좋은 흥미롭고 구체적인 주제를 웹 검색을 통해 하나 골라주세요.
+
+아래는 최근에 이미 다룬 주제 목록입니다. 이 목록과 겹치거나 지나치게 비슷한 주제는 피해주세요:
+{json.dumps(recent, ensure_ascii=False) if recent else "(없음)"}
+
+주의:
+- 'AI'처럼 지나치게 넓은 주제 말고, 글 하나로 완결되는 구체적인 주제로 골라주세요.
+- 광고성/스팸성 주제는 피해주세요.
+
+마지막 줄에 반드시 아래 형식으로만 최종 선택한 주제를 적어주세요 (다른 설명 없이):
+TOPIC: <최종 주제>
+""".strip()
+
+        text = self._search_and_generate_text(system, user_prompt, max_uses=3, max_tokens=2000)
+
+        for line in reversed(text.splitlines()):
+            line = line.strip()
+            if line.upper().startswith("TOPIC:"):
+                topic = line.split(":", 1)[1].strip()
+                if topic:
+                    return topic
+
+        # 형식을 못 찾으면 마지막 줄을 폴백으로 사용
+        for line in reversed(text.splitlines()):
+            if line.strip():
+                return line.strip()
+
+        raise RuntimeError("자동 주제 선정에 실패했습니다. --keyword를 직접 지정해주세요.")
 
     # ------------------------------------------------------------------
     # 1) 웹 자료 수집
@@ -68,8 +165,6 @@ class BlogPoster:
     def research_topic(self, keyword: str) -> str:
         """키워드에 대해 웹 검색을 수행하고 취합된 자료를 반환합니다."""
         num_searches = self.blog_config.get("num_search_queries", 5)
-
-        tools = [{"type": "web_search_20260209", "name": "web_search", "max_uses": num_searches}]
 
         system = (
             "당신은 블로그 글 작성을 위한 리서치 담당자입니다. "
@@ -88,34 +183,7 @@ class BlogPoster:
             "취합한 자료를 구조화된 텍스트로 요약해서 알려주세요."
         )
 
-        messages = [{"role": "user", "content": user_prompt}]
-        response = self.client.messages.create(
-            model=MODEL,
-            max_tokens=8000,
-            system=system,
-            tools=tools,
-            messages=messages,
-        )
-
-        # 서버 사이드 도구 호출이 10회 제한에 걸리면 pause_turn으로 멈추므로 이어서 진행
-        continuations = 0
-        while response.stop_reason == "pause_turn" and continuations < 5:
-            messages = [
-                {"role": "user", "content": user_prompt},
-                {"role": "assistant", "content": response.content},
-            ]
-            response = self.client.messages.create(
-                model=MODEL,
-                max_tokens=8000,
-                system=system,
-                tools=tools,
-                messages=messages,
-            )
-            continuations += 1
-
-        research_text = "\n".join(
-            block.text for block in response.content if block.type == "text"
-        )
+        research_text = self._search_and_generate_text(system, user_prompt, max_uses=num_searches)
 
         if not research_text.strip():
             raise RuntimeError(
@@ -238,7 +306,7 @@ class BlogPoster:
     # ------------------------------------------------------------------
     def run(
         self,
-        keyword: str,
+        keyword: Optional[str] = None,
         status: Optional[str] = None,
         category: Optional[str] = None,
         lang: Optional[str] = None,
@@ -247,6 +315,12 @@ class BlogPoster:
         status = status or self.blog_config.get("default_status", "draft")
         lang = lang or self.blog_config.get("language", "ko")
 
+        auto_topic = not keyword
+        if auto_topic:
+            print("\n🎯 키워드가 지정되지 않아 트렌드를 검색해 주제를 자동으로 고르는 중...")
+            keyword = self.pick_trending_topic()
+            print(f"✅ 주제 선정 완료: {keyword}")
+
         print(f"\n🔍 '{keyword}' 관련 자료를 웹에서 수집하는 중...")
         research = self.research_topic(keyword)
         print("✅ 자료 수집 완료!")
@@ -254,6 +328,9 @@ class BlogPoster:
         print("\n✍️  취합한 자료로 블로그 글을 작성하는 중...")
         post = self.write_blog_post(keyword, research, lang)
         print(f"✅ 블로그 글 작성 완료! (제목: {post['title']})")
+
+        if auto_topic:
+            self._record_topic(keyword)
 
         result = {
             "keyword": keyword,
@@ -293,10 +370,16 @@ def main():
   python blog_poster.py --keyword "2026년 AI 트렌드" --dry-run
   python blog_poster.py --keyword "홈트레이닝 루틴 추천" --status draft
   python blog_poster.py --keyword "제주도 여행 코스" --status publish --category "여행"
+  python blog_poster.py                                    # 키워드 없이 실행 시 주제 자동 선정 (자동화용)
         """,
     )
 
-    parser.add_argument("--keyword", "-k", required=True, help="블로그 글 주제 키워드")
+    parser.add_argument(
+        "--keyword",
+        "-k",
+        default=None,
+        help="블로그 글 주제 키워드. 생략하면 웹 트렌드를 검색해 자동으로 주제를 고릅니다.",
+    )
     parser.add_argument(
         "--status",
         "-s",

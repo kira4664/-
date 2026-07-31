@@ -315,6 +315,11 @@ TOPIC: <최종 주제>
         status = status or self.blog_config.get("default_status", "draft")
         lang = lang or self.blog_config.get("language", "ko")
 
+        if not dry_run:
+            # 워드프레스 인증 정보가 없으면 리서치/글 작성에 API 비용을 쓰기 전에 미리 실패시킨다
+            self._wp_base_url()
+            self._wp_auth()
+
         auto_topic = not keyword
         if auto_topic:
             print("\n🎯 키워드가 지정되지 않아 트렌드를 검색해 주제를 자동으로 고르는 중...")

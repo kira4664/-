@@ -196,3 +196,52 @@ python blog_poster.py --status draft
 
 - 게시 상태는 항상 `draft`(초안)입니다. 자동 생성된 글이 검수 없이 바로 공개되지 않도록 하기 위함이며, 품질을 확인한 뒤 워드프레스 관리자 페이지에서 직접 발행하는 것을 권장합니다.
 - 실행 주기나 게시 상태를 바꾸려면 워크플로 파일의 `cron` 값과 `--status` 옵션을 수정하세요.
+
+---
+
+# 검색엔진 노출 확인 도구 (SEO Exposure Checker)
+
+워드프레스에 올린 글이 구글/빙/네이버/다음(카카오) 검색 결과에 실제로 노출되는지 확인하는 도구입니다. 각 검색엔진의 검색결과 화면을 직접 크롤링하지 않고(봇 차단·캡차로 금방 막히고 이용약관에도 어긋남), **각 사가 공식 제공하는 검색 API**를 사용해 글 제목으로 검색해본 뒤 결과 안에 내 글 URL이 있는지, 몇 위인지 확인합니다.
+
+## 동작 방식
+
+1. 워드프레스 REST API(`/wp-json/wp/v2/posts`)로 최근 발행된 글 목록(제목/URL)을 가져옵니다.
+2. 각 글 제목을 검색어로 구글/빙/네이버/다음 검색 API를 호출합니다.
+3. 검색 결과 URL 목록에 내 글 URL이 있는지 비교해 노출 여부와 순위를 판정합니다.
+4. 결과를 콘솔에 출력하고 `output/seo_check_<타임스탬프>.json`에 저장합니다.
+
+키를 설정하지 않은 검색엔진은 자동으로 건너뛰고 "확인 불가"로 표시되므로, 필요한 엔진만 선택적으로 설정해도 됩니다.
+
+## API 키 발급 방법
+
+| 검색엔진 | 필요한 키 | 발급처 |
+|---|---|---|
+| 구글 | `GOOGLE_API_KEY`, `GOOGLE_CSE_ID` | [Programmable Search Engine](https://programmablesearchengine.google.com/)에서 검색엔진 생성 시 "전체 웹 검색"으로 설정 후, [Custom Search API](https://developers.google.com/custom-search/v1/overview)용 API 키 발급 (무료 할당량 100건/일, 초과 시 유료) |
+| 빙 | `BING_API_KEY` | Azure Portal에서 Bing Search v7 리소스 발급 (Microsoft 정책 변경으로 신규 발급이 제한/중단될 수 있으니, Azure Portal에서 현재 가입 가능 여부를 먼저 확인하세요) |
+| 네이버 | `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET` | [네이버 개발자센터](https://developers.naver.com/apps/#/register) → 애플리케이션 등록 → "검색" API 사용 설정 |
+| 다음(카카오) | `KAKAO_REST_API_KEY` | [카카오 디벨로퍼스](https://developers.kakao.com/) → 애플리케이션 등록 → REST API 키 확인 (다음 검색은 카카오 검색 API로 제공됩니다) |
+
+`.env` 파일에 필요한 키를 추가하세요 (`.env.example` 참고).
+
+## 사용 방법
+
+```bash
+# 최근 발행 글 5개를 전체 검색엔진으로 확인 (기본값)
+python seo_exposure_checker.py
+
+# 최근 10개 글 확인
+python seo_exposure_checker.py --limit 10
+
+# 특정 검색엔진만 확인
+python seo_exposure_checker.py --engines google,naver
+
+# 워드프레스 목록 조회 없이, 특정 URL 하나만 확인
+python seo_exposure_checker.py --url "https://your-wordpress-site.com/2026/09/02/my-post/" --title "글 제목"
+```
+
+## 참고 및 한계
+
+- 네이버/다음(카카오)의 "검색 API" 결과는 실제 통합검색 화면 노출 순서와 완전히 같지 않을 수 있습니다 (오픈API는 웹문서 검색 결과 기준). 참고용 지표로 활용하세요.
+- 구글 Custom Search API, 빙 Search API는 모두 일별 무료 할당량이 있고 초과 시 과금되거나 제한됩니다.
+- 갓 발행한 글은 검색엔진이 아직 색인(크롤링)하지 않아 당연히 미노출로 나올 수 있습니다. 보통 몇 시간~며칠 후 다시 확인해보세요.
+- 구글의 경우 [Google Search Console](https://search.google.com/search-console)에 사이트를 등록하면 특정 URL의 실제 색인 상태(크롤링 여부, 색인 제외 사유 등)를 훨씬 정확하게 확인할 수 있습니다. 이 도구는 "검색 노출 여부"를 빠르게 훑어보는 용도이고, 정확한 색인 진단은 각 검색엔진의 웹마스터 도구(네이버 서치어드바이저, 빙 웹마스터 도구 포함)를 함께 활용하는 것을 권장합니다.

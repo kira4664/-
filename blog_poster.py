@@ -45,7 +45,9 @@ class BlogPoster:
 
     def __init__(self, config_path: str = "config.json"):
         self.config = self._load_config(config_path)
-        self.api_key = os.getenv("ANTHROPIC_API_KEY")
+        # 시크릿 저장 과정에서 실수로 붙는 앞뒤 공백/개행은 HTTP 헤더에 그대로 들어가면
+        # httpx가 "Illegal header value"로 거부하므로 방어적으로 제거한다
+        self.api_key = (os.getenv("ANTHROPIC_API_KEY") or "").strip() or None
         if not self.api_key:
             raise ValueError(
                 "ANTHROPIC_API_KEY가 설정되지 않았습니다. "
@@ -240,8 +242,9 @@ TOPIC: <최종 주제>
     # 3) 워드프레스 포스팅
     # ------------------------------------------------------------------
     def _wp_auth(self):
-        wp_user = os.getenv("WP_USERNAME")
-        wp_app_password = os.getenv("WP_APP_PASSWORD")
+        # 시크릿에 섞여 들어간 앞뒤 공백/개행을 제거 (Basic Auth 헤더 오류 방지)
+        wp_user = (os.getenv("WP_USERNAME") or "").strip()
+        wp_app_password = (os.getenv("WP_APP_PASSWORD") or "").strip()
         if not wp_user or not wp_app_password:
             raise ValueError(
                 "WP_USERNAME / WP_APP_PASSWORD가 설정되지 않았습니다. "
@@ -250,7 +253,7 @@ TOPIC: <최종 주제>
         return (wp_user, wp_app_password)
 
     def _wp_base_url(self) -> str:
-        wp_url = os.getenv("WP_URL")
+        wp_url = (os.getenv("WP_URL") or "").strip()
         if not wp_url:
             raise ValueError("WP_URL이 설정되지 않았습니다. .env 파일에 워드프레스 사이트 주소를 입력하세요.")
         return wp_url.rstrip("/")

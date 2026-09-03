@@ -68,6 +68,16 @@ class BlogPoster:
         with open(config_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
+    def _create_message(self, **kwargs):
+        """연결 오류/타임아웃 발생 시, 오래 유휴 상태였던 연결이 끊겼을 가능성을 감안해
+        클라이언트를 새로 만들어 한 번 더 시도한다."""
+        try:
+            return self.client.messages.create(**kwargs)
+        except (anthropic.APIConnectionError, anthropic.APITimeoutError) as e:
+            print(f"⚠️  API 호출 실패({type(e).__name__}), 연결을 새로 맺어 재시도합니다...")
+            self.client = anthropic.Anthropic(api_key=self.api_key, timeout=60.0, max_retries=5)
+            return self.client.messages.create(**kwargs)
+
     # ------------------------------------------------------------------
     # 서버 사이드 web_search 도구를 사용해 텍스트 응답을 얻는 공통 헬퍼
     # ------------------------------------------------------------------
@@ -76,7 +86,7 @@ class BlogPoster:
     ) -> str:
         tools = [{"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses}]
         messages = [{"role": "user", "content": user_prompt}]
-        response = self.client.messages.create(
+        response = self._create_message(
             model=MODEL,
             max_tokens=max_tokens,
             system=system,
@@ -91,7 +101,7 @@ class BlogPoster:
                 {"role": "user", "content": user_prompt},
                 {"role": "assistant", "content": response.content},
             ]
-            response = self.client.messages.create(
+            response = self._create_message(
                 model=MODEL,
                 max_tokens=max_tokens,
                 system=system,
@@ -227,7 +237,7 @@ TOPIC: <최종 주제>
 {f'【커스텀 스타일】{custom_style}' if custom_style else ''}
 """.strip()
 
-        response = self.client.messages.create(
+        response = self._create_message(
             model=MODEL,
             max_tokens=8000,
             system=system,

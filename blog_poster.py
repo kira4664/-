@@ -52,7 +52,7 @@ class BlogPoster:
                 ".env 파일을 생성하고 API 키를 입력하세요."
             )
 
-        self.client = anthropic.Anthropic(api_key=self.api_key)
+        self.client = anthropic.Anthropic(api_key=self.api_key, timeout=60.0, max_retries=5)
         self.output_dir = Path(self.config.get("output_directory", "output"))
         self.output_dir.mkdir(exist_ok=True)
 
@@ -414,6 +414,13 @@ def main():
         )
     except Exception as e:
         print(f"❌ 오류 발생: {e}")
+        print(f"   예외 타입: {type(e).__module__}.{type(e).__name__}")
+        cause = e.__cause__
+        depth = 0
+        while cause is not None and depth < 5:
+            print(f"   └─ 원인: {type(cause).__module__}.{type(cause).__name__}: {cause}")
+            cause = cause.__cause__
+            depth += 1
         return 1
 
     return 0

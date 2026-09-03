@@ -28,6 +28,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Network diagnostics (api.anthropic.com)
+        run: |
+          echo "--- DNS 조회 ---"
+          getent hosts api.anthropic.com || echo "DNS 조회 실패"
+          echo "--- curl 연결 테스트 ---"
+          curl -sS -m 15 -o /dev/null -w "HTTP status: %{http_code}, 연결 시간: %{time_connect}s, TLS 핸드셰이크: %{time_appconnect}s\n" \
+            https://api.anthropic.com/v1/models \
+            -H "x-api-key: dummy-key-for-connectivity-check" \
+            -H "anthropic-version: 2023-06-01" \
+            || echo "curl 실패 (exit code $?)"
+
       - name: Generate and post blog article
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
